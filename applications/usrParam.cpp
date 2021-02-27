@@ -9,17 +9,16 @@
  */
 
 #include <rtthread.h>
-#define DBG_TAG "usrParam"
+#define DBG_TAG "param"
 #include <usrPublic.h>
 #include <version.h>
 
-extern "C"
-{
+//extern "C"
+//{
 #include <rtdef.h>
-#include <at24cxx.h>
-}
+//}
 #include <bsp/includes/taskNet.h>
-#include <bsp/includes/taskI2C.h>
+#include <bsp/includes/bspI2C.h>
 
 // software version
 #define PARAM_SOFTVERSION_BASE      0       // 软件版本信息保存基地址
@@ -108,7 +107,6 @@ rt_err_t readNetParam(void)
 // 上电通讯参数初始化
 static int initNetParam(void)
 {
-    rt_kprintf("ini ethnet param...\n");
     loadDefNetParam();        // 加载默认参数
     readNetParam();           // 读取flash中的参数 成功则替换默认参数
     setCurNetCfg(RT_NULL);    // 参数立即生效

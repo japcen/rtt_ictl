@@ -22,8 +22,6 @@
 #define ADS111x_LOTH_REG  0x02        //最低阀值寄存器
 #define ADS111x_HITH_REG  0x03        //最高阀值寄存器
 
-ad111x_device_t g_dev_ad111x = RT_NULL;
-
 ad111x_device_t ads111x_init(const char *i2c_bus_name, uint8_t AddrInput)
 {
     ad111x_device_t dev = RT_NULL;
@@ -40,7 +38,6 @@ ad111x_device_t ads111x_init(const char *i2c_bus_name, uint8_t AddrInput)
     }
 
     dev->AddrInput = AddrInput;
-    g_dev_ad111x = dev;
 
     return dev;
 }
@@ -166,51 +163,4 @@ rt_uint16_t lvbo(rt_uint8_t LCMD, rt_uint8_t HCMD)        //求30个值的平均
     U=0;
     return ((float)temp/30);    //带上小数点
 }
-#endif
-
-#if 0
-void ads111x(int argc, char *argv[])
-{
-    ad111x_device_t dev = AD111x_HDL;
-
-    if (argc == 2) {
-        if (!strcmp(argv[1], "probe")) {
-            if (RT_NULL == dev) {
-                if (RT_NULL != dev) {
-                    ads111x_deinit(dev);
-                }
-                dev = ads111x_init(ADS111x_I2C_BUS_NAME, ADS111x_ADD);
-                if (RT_NULL != dev) {
-                    ads111x_config(AD111x_HDL, ADS_SPD_128SPS|ADS_QUE_DISABLE, ADS_MUX_01|ADS_OS_BEGIN|ADS_PGA_2048V);
-                }
-            }
-
-            if (RT_NULL != dev) {
-                rt_kprintf("ats111x probe ok !\n");
-            }
-            else {
-                rt_kprintf("ats111x probe fail !\n");
-            }
-        }
-        else if (!strcmp(argv[1], "read")) {
-            if (RT_NULL != dev) {
-                rt_uint16_t result = 0;;
-                result = ads111x_readAD(dev);
-                rt_kprintf("read ads111x : %d\n", result);
-            }
-            else {
-                rt_kprintf("Please using 'ads111x probe first\n");
-            }
-        }
-        else {
-            rt_kprintf("Unknown command. Please enter 'ads111x' for help\n");
-        }
-    }
-    else {
-        rt_kprintf("Usage:\n");
-        rt_kprintf("ads111x probe              - probe ads111x device\n");
-        rt_kprintf("ads111x read               - read ads111x ai data\n");
-    }
-}
-MSH_CMD_EXPORT(ads111x, ads111x ai function);
 #endif

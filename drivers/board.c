@@ -12,6 +12,7 @@
 #include <board.h>
 #include <drv_common.h>
 #include <rtdevice.h>
+#include <bsp/includes/bspEncoder.h>
 
 RT_WEAK void rt_hw_board_init()
 {
@@ -171,8 +172,6 @@ void HAL_ETH_MspDeInit(ETH_HandleTypeDef* ethHandle)
 }
 
 // ECODER
-#define MAX_TIMVAL 60000
-#define INI_TIMVAL 30000
 TIM_HandleTypeDef htim1;
 int MX_TIM1_Init(void)
 {
@@ -207,7 +206,7 @@ int MX_TIM1_Init(void)
   }
   return 0;
 }
-INIT_DEVICE_EXPORT(MX_TIM1_Init);
+//INIT_DEVICE_EXPORT(MX_TIM1_Init);
 
 TIM_HandleTypeDef htim4;
 int MX_TIM4_Init(void)
@@ -242,37 +241,42 @@ int MX_TIM4_Init(void)
   }
   return 0;
 }
-INIT_DEVICE_EXPORT(MX_TIM4_Init);
+//INIT_DEVICE_EXPORT(MX_TIM4_Init);
+
+int encoderInit(void)
+{
+    MX_TIM4_Init();
+    g_ctrlEnc[0].dir = 0;
+    g_ctrlEnc[0].circle = 0;
+    g_ctrlEnc[0].val = 0;
+    MX_TIM1_Init();
+    g_ctrlEnc[1].dir = 0;
+    g_ctrlEnc[1].circle = 0;
+    g_ctrlEnc[1].val = 0;
+
+    __HAL_TIM_SET_COUNTER(&htim4, 0);
+    __HAL_TIM_ENABLE_IT(&htim4, TIM_IT_UPDATE);
+    HAL_NVIC_SetPriority(TIM4_IRQn, 0, 0);
+    __HAL_TIM_CLEAR_IT(&htim4, TIM_IT_UPDATE);
+    HAL_NVIC_EnableIRQ(TIM4_IRQn);
+
+    __HAL_TIM_SET_COUNTER(&htim1, 0);
+    __HAL_TIM_ENABLE_IT(&htim1, TIM_IT_UPDATE);
+    HAL_NVIC_SetPriority(TIM1_UP_TIM10_IRQn, 0, 0);
+    __HAL_TIM_CLEAR_IT(&htim1, TIM_IT_UPDATE);
+    HAL_NVIC_EnableIRQ(TIM1_UP_TIM10_IRQn);
+
+    HAL_TIM_Encoder_Start(&htim1, TIM_CHANNEL_ALL);
+    HAL_TIM_Encoder_Start(&htim4, TIM_CHANNEL_ALL);
+
+    return 0;
+}
+INIT_BOARD_EXPORT(encoderInit);
 
 void TIM1_UP_TIM10_IRQHandler(void)
 {
     HAL_TIM_IRQHandler(&htim1);
 }
-//void TIM4_IRQHandler(void)
-//{
-//    HAL_TIM_IRQHandler(&htim4);
-//}
-
-#if 0
-static int16_t cntC[2] = {0, 0}; // CMEDIT
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
-{
-    if (htim->Instance == TIM1)
-    {
-        if(__HAL_TIM_GET_COUNTER(&htim1) > INI_TIMVAL)
-            cntC[0] --;
-        else cntC[0] ++;
-        __HAL_TIM_SET_COUNTER(&htim1, INI_TIMVAL);
-    }
-    else if (htim->Instance == TIM4)
-    {   if(__HAL_TIM_GET_COUNTER(&htim4) > INI_TIMVAL)
-            cntC[1] --;
-        else cntC[1] ++;
-        __HAL_TIM_SET_COUNTER(&htim4, INI_TIMVAL);
-    }
-
-}
-#endif
 
 void HAL_TIM_Encoder_MspInit(TIM_HandleTypeDef* tim_encoderHandle)
 {
@@ -464,7 +468,6 @@ void HAL_TIM_MspPostInit(TIM_HandleTypeDef* timHandle)
 }
 void HAL_TIM_Base_MspInit(TIM_HandleTypeDef* tim_baseHandle)
 {
-
   if(tim_baseHandle->Instance==TIM8)
   {
   /* USER CODE BEGIN TIM8_MspInit 0 */
@@ -668,5 +671,47 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* spiHandle)
   /* USER CODE BEGIN SPI3_MspDeInit 1 */
 
   /* USER CODE END SPI3_MspDeInit 1 */
+  }
+}
+
+// hcrc
+CRC_HandleTypeDef hcrc;
+void MX_CRC_Init(void)
+{
+  hcrc.Instance = CRC;
+  if (HAL_CRC_Init(&hcrc) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+}
+INIT_BOARD_EXPORT(MX_CRC_Init);
+void HAL_CRC_MspInit(CRC_HandleTypeDef* crcHandle)
+{
+  if(crcHandle->Instance==CRC)
+  {
+  /* USER CODE BEGIN CRC_MspInit 0 */
+
+  /* USER CODE END CRC_MspInit 0 */
+    /* CRC clock enable */
+    __HAL_RCC_CRC_CLK_ENABLE();
+  /* USER CODE BEGIN CRC_MspInit 1 */
+
+  /* USER CODE END CRC_MspInit 1 */
+  }
+}
+
+void HAL_CRC_MspDeInit(CRC_HandleTypeDef* crcHandle)
+{
+  if(crcHandle->Instance==CRC)
+  {
+  /* USER CODE BEGIN CRC_MspDeInit 0 */
+
+  /* USER CODE END CRC_MspDeInit 0 */
+    /* Peripheral clock disable */
+    __HAL_RCC_CRC_CLK_DISABLE();
+  /* USER CODE BEGIN CRC_MspDeInit 1 */
+
+  /* USER CODE END CRC_MspDeInit 1 */
   }
 }

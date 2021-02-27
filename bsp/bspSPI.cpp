@@ -9,21 +9,19 @@
  */
 
 #include <rtthread.h>
-#define DBG_TAG "taskSPI"
+#define DBG_TAG __FILE__
 #include <usrPublic.h>
 extern "C"
 {
-#include <bsp/includes/taskSPI.h>
+#include <bsp/includes/bspSPI.h>
 #include <drv_spi.h>
 }
 #include "board.h"
 
+// 上电初始化w25q
 #define W25Q80_SPI_BUS_NAME              "spi1"
 #define W25Q80_SPI_DEV_NAME              "spi_w25q"
-//rt_spi_flash_device_t g_dev_w25q80       = RT_NULL;
-sfud_flash_t          g_dev_w25q80       = RT_NULL;
-#define W25Q80_SFUD_HDL                   g_dev_w25q80
-
+sfud_flash_t g_dev_w25q80                = RT_NULL;
 static int rt_hw_spi_flash_init(void)
 {
     /* 往总线 spi1 上挂载一个从设备 */
@@ -39,43 +37,8 @@ static int rt_hw_spi_flash_init(void)
 }
 INIT_COMPONENT_EXPORT(rt_hw_spi_flash_init);
 
-#ifdef DBG_MOD
-#ifdef RT_USING_FINSH
 
-void w25q(int argc, char *argv[])
-{
-    sfud_err result;
-    rt_uint8_t *read_data;
-    rt_uint8_t *write_data;
-
-    W25Q80_SFUD_HDL = rt_sfud_flash_find_by_dev_name("W25Q80DV");
-    if (RT_NULL == W25Q80_SFUD_HDL) {
-        rt_kprintf("no w25q80 dev!!!\n");
-        return;
-    }
-
-    result = sfud_erase(W25Q80_SFUD_HDL, 0, 4096);
-    if (SFUD_SUCCESS != result) {
-        rt_kprintf("w25q80 erase err %d!!!\n", result);
-        return;
-    }
-
-    write_data = (rt_uint8_t*)rt_malloc(32);
-    rt_memset(write_data, 1, 32);
-    write_data[1] = 1;
-    write_data[19] = 19;
-    write_data[25] = 25;
-    sfud_write(W25Q80_SFUD_HDL, 0, 32, write_data);
-
-    read_data = (rt_uint8_t*)rt_malloc(32);
-    sfud_read(W25Q80_SFUD_HDL, 0, 32, read_data);
-    rt_kprintf("w25q80 data is %02X %02X %02X!!!\n", read_data[1], read_data[19], read_data[25]);
-}
-MSH_CMD_EXPORT(w25q, w25q test);
-
-#endif
-#endif
-
+// 上电初始化cs5532设备
 struct rt_spi_device *g_dev_cs0;
 struct rt_spi_device *g_dev_cs1;
 struct rt_spi_device *g_dev_cs2;
@@ -121,13 +84,12 @@ INIT_APP_EXPORT(rt_hw_spi_ai_init);
 
 static struct rt_thread tid_testCs5532;
 static rt_uint8_t thread_stack_test[1024];
-//char testdevName[RT_NAME_MAX] = {0};
 void test5532_entry(void *parameter)
 {
-    cs5532_test_conrd(/*testdevName*/);
+    cs5532_test_conrd();
 }
 
-void cs5532(int argc, char *argv[])
+void test_cs5532(int argc, char *argv[])
 {
     char devName[RT_NAME_MAX] = {0};
 
@@ -186,12 +148,12 @@ void cs5532(int argc, char *argv[])
     }
     else {
         rt_kprintf("Usage:\n");
-        rt_kprintf("cs5532 reg <idx>            - test cs5532 reg write and read\n");
-        rt_kprintf("cs5532 sig <idx>            - test cs5532 single convert\n");
-        rt_kprintf("cs5532 con <on/off>         - test cs5532 all channels continue convert\n");
+        rt_kprintf("test_cs5532 reg <idx>            - test cs5532 reg write and read\n");
+        rt_kprintf("test_cs5532 sig <idx>            - test cs5532 single convert\n");
+        rt_kprintf("test_cs5532 con <on/off>         - test cs5532 all channels continue convert\n");
     }
 }
-MSH_CMD_EXPORT(cs5532, Test Fun: test cs5532);
+MSH_CMD_EXPORT(test_cs5532, Test Fun: test cs5532);
 
 #endif
 #endif

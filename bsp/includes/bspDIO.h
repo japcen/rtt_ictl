@@ -10,56 +10,58 @@
 #ifndef BSP_INCLUDES_BSPDIO_H_
 #define BSP_INCLUDES_BSPDIO_H_
 
-class CCtrlGpioDo
+// DO序列控制类
+class CCtrlGpioDO
 {
 protected:
-    rt_uint16_t  DO_SET;
-    rt_uint16_t* lstPin;
-    rt_uint8_t   maxNum;
+    rt_uint16_t  m_doSet;
+    rt_uint16_t* m_pPins;
+    rt_uint8_t   m_num;
 public:
-    void init(rt_uint16_t* pinlst, rt_uint8_t* pInilst, rt_uint8_t num);
+    void init(rt_uint16_t* pPinList, rt_uint8_t* pIniList, rt_uint8_t num);
     void setDO(rt_uint8_t idx, rt_uint8_t state);
-    void immSetDO(rt_uint8_t idx, rt_uint8_t state);
+    void setRtDO(rt_uint8_t idx, rt_uint8_t state);
     void toggleDO(rt_uint8_t idx);
     rt_uint8_t getDO(rt_uint8_t idx);
-    rt_uint8_t getimmDO(rt_uint8_t idx);
+    rt_uint8_t getRtDO(rt_uint8_t idx);
     rt_uint16_t showDO(void);
     void outputDO(rt_uint8_t idx);
 public:
-    CCtrlGpioDo() {
-        lstPin = RT_NULL;
-        DO_SET = 0;
-        maxNum = 0;
+    CCtrlGpioDO() {
+        m_pPins = RT_NULL;
+        m_doSet = 0;
+        m_num = 0;
     }
-    ~CCtrlGpioDo() {
-        if (RT_NULL != lstPin) rt_free(lstPin);
-        DO_SET = 0;
-        maxNum = 0;
+    ~CCtrlGpioDO() {
+        if (RT_NULL != m_pPins) rt_free(m_pPins);
+        m_doSet = 0;
+        m_num = 0;
     }
 };
 
-class CCtrlGpioDi
+// DI序列控制类
+class CCtrlGpioDI
 {
 protected:
-    rt_uint16_t  DI_DAT;
-    rt_uint16_t* lstPin;
-    rt_uint8_t   maxNum;
-public:
-    void init(rt_uint16_t* pinlst, rt_uint8_t num);
+    rt_uint16_t  m_diDat;
+    rt_uint16_t* m_pPins;
+    rt_uint8_t   m_num;
     void setDI(rt_uint8_t idx, rt_uint8_t state);
-    rt_uint8_t getDI(rt_uint8_t idx);
+public:
+    void init(rt_uint16_t* pPinList, rt_uint8_t num);
+    rt_uint8_t getRtDI(rt_uint8_t idx);
     rt_uint8_t showDI(void);
     void updataDI(void);
 public:
-    CCtrlGpioDi() {
-        lstPin = RT_NULL;
-        DI_DAT = 0;
-        maxNum = 0;
+    CCtrlGpioDI() {
+        m_pPins = RT_NULL;
+        m_diDat = 0;
+        m_num = 0;
     }
-    ~CCtrlGpioDi() {
-        if (RT_NULL != lstPin) rt_free(lstPin);
-        DI_DAT = 0;
-        maxNum = 0;
+    ~CCtrlGpioDI() {
+        if (RT_NULL != m_pPins) rt_free(m_pPins);
+        m_diDat = 0;
+        m_num = 0;
     }
 };
 

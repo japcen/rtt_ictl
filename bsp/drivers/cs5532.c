@@ -243,7 +243,7 @@ void cs5532_test_singlerd(const char *devName)
     rt_kprintf("++++test %s single convert end\n\n", devName);
 }
 
-void cs5532_test_conrd(void/*const char *devName*/)
+void cs5532_test_conrd(void)
 {
     int32_t   date = 0;
     float     fval = 0.0f;

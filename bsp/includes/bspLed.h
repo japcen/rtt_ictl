@@ -20,32 +20,33 @@ extern "C"
 #define BSP_LED_ON          PIN_LOW
 #define BSP_LED_OFF         PIN_HIGH
 
+// Led闪烁控制结构
 struct led_blink_struct{
-    //rt_uint8_t  status; // 0 unvalid 1 blink
-    rt_uint32_t onTick;
-    rt_uint32_t offTick;
-    rt_uint32_t lstSysTick;
-    rt_uint32_t tick;
-    rt_uint8_t  trig;
+    rt_uint32_t onTick;        // 亮时长
+    rt_uint32_t offTick;       // 灭时长
+    rt_uint32_t lstSysTick;    // 上一次时长累积
+    rt_uint32_t tick;          // 时长累积
+    rt_uint8_t  trig;          // 首次触发标识
 };
-class CCtrlLED : public CCtrlGpioDo
+// Led序列控制类
+class CCtrlLED : public CCtrlGpioDO
 {
 private:
-    struct led_blink_struct *led;
+    struct led_blink_struct *m_pLed;
 public:
-    void init(rt_uint16_t* pinlst, rt_uint8_t* pInilst, rt_uint8_t num);
-    void blinkon(rt_uint8_t idx, rt_uint32_t onms, rt_uint32_t offms);
-    void blinkoff(rt_uint8_t idx);
+    void init(rt_uint16_t* pPinList, rt_uint8_t* pIniList, rt_uint8_t num);
+    void blinkOn(rt_uint8_t idx, rt_uint32_t onms, rt_uint32_t offms);
+    void blinkOff(rt_uint8_t idx);
     void on(rt_uint8_t idx);
     void off(rt_uint8_t idx);
     void toggle(rt_uint8_t idx);
     void outputDO(rt_uint8_t idx, rt_uint32_t systick);
 public:
     CCtrlLED() {
-        led = RT_NULL;
+        m_pLed = RT_NULL;
     }
     ~CCtrlLED() {
-        if (RT_NULL != led) rt_free(led);
+        if (RT_NULL != m_pLed) rt_free(m_pLed);
     }
 };
 

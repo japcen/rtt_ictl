@@ -9,7 +9,7 @@
  */
 
 #include <rtthread.h>
-#define DBG_TAG "uartExample"
+#define DBG_TAG "demoUart"
 #include <usrPublic.h>
 #include <stdlib.h>
 
@@ -56,6 +56,7 @@ void taskUart_entry(void *parameter)
     }
 }
 
+// 上电启动串口收发线程
 #define THREAD_NAME_UART            "taskuart"
 #define THREAD_PRIO_TASKUART        20
 #define THREAD_SIZE_TASKUART        1024
@@ -80,12 +81,13 @@ INIT_APP_EXPORT(threadbegin_uart);
 
 #ifdef DBG_MOD
 #ifdef RT_USING_FINSH
-void uart_sendmsg(int argc, char *argv[])
+// 测试 用串口2发送固定信息
+void test_uart(int argc, char *argv[])
 {
     if (test_uart2_on) test_uart2_on = 0;
     else test_uart2_on = 1;
 }
-MSH_CMD_EXPORT(uart_sendmsg, Test Fun: send msg on uart2);
+MSH_CMD_EXPORT(test_uart, Test Fun: send msg on uart2);
 
 #endif
 #endif

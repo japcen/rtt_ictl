@@ -377,6 +377,9 @@ extern "C"
 
 /*-------------------------- ON_CHIP_FLASH CONFIG END --------------------------*/
 
+//#define BSP_USING_PULSE_ENCODER1
+//#define BSP_USING_PULSE_ENCODER4
+
 // USER CODE BEGIN IO PM
 #define RT_DO0_Pin   GET_PIN(E, 13)
 #define RT_DO1_Pin   GET_PIN(E, 12)
@@ -445,10 +448,16 @@ extern "C"
 #define RT_EB1_Pin        GET_PIN(E, 11)
 #define EB1_Pin           GPIO_PIN_11
 
+#define MAX_TIMVAL 20000
+//#define INI_TIMVAL 30000
+extern TIM_HandleTypeDef htim1;
+extern TIM_HandleTypeDef htim4;
 extern void HAL_TIM_MspPostInit(TIM_HandleTypeDef* timHandle);
 extern void HAL_TIM_Base_MspInit(TIM_HandleTypeDef* tim_baseHandle);
-// USER CODE END IO PM
-int MX_TIM8_Init(void); //CMEDIT
+
+// crc
+extern CRC_HandleTypeDef hcrc;
+
 
 #ifdef __cplusplus
 }

@@ -16,26 +16,27 @@
 class CCtrlMotor
 {
 public:
-    uint16_t en_pin;                                 // 使能引脚
-    uint16_t dir_pin;                                // 方向引脚
-    int      ch;                                     // pwm通道号
-    struct rt_device_pwm *pPwm;                      // pwm控制
-    uint8_t valid;                                   // 初始化标识
+    uint16_t m_pinEn;                                 // 使能引脚
+    uint16_t m_pinDir;                                // 方向引脚
+    int      m_pwmChl;                                // pwm通道号
+    struct rt_device_pwm *m_pPwm;                     // pwm控制
+    uint8_t  m_valide;                                // 初始化标识
 public:
     void init(uint16_t en, uint16_t dir, int ch);    // 电机控制器初始化
-    void turnon(void);                               // 启动
-    void turnoff(void);                              // 关停
-    void speed(rt_int32_t speed);                    // 设置转速
-    void dir(uint8_t dir);                           // 设置方向
-    uint8_t inited(void);                            // 控制器是否已初始化
+    void turnOn(void);                               // 使能电机
+    void turnOff(void);                              // 失能电机
+    void setSpeed(rt_int32_t speed);                 // 设置转速
+    void setDir(uint8_t dir);                        // 设置方向
+    uint8_t beValide(void);                          // 控制器是否已初始化
 public:
     CCtrlMotor() {
-        valid = 0;
+        m_valide = 0;
     }
     ~CCtrlMotor() {
     }
 };
 
-
+extern CCtrlMotor g_hdl_motor0;
+extern CCtrlMotor g_hdl_motor1;
 
 #endif /* BSP_INCLUDES_BSPMOTOR_H_ */

@@ -19,10 +19,10 @@ struct ad111x_device
     uint8_t AddrInput;
 };
 typedef struct ad111x_device *ad111x_device_t;
-extern ad111x_device_t g_dev_ad111x;
+extern ad111x_device_t g_dev_ads111x;
 
-#define ADS111x_I2C_BUS_NAME     "i2c1"
-#define AD111x_HDL               g_dev_ad111x
+//#define ADS111x_I2C_BUS_NAME     "i2c1"
+//#define AD111x_HDL               g_dev_ad111x
 
 #define ADS111x_ADD              (0x90 >> 1)             // 设备地址
 

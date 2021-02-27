@@ -9,7 +9,7 @@
  */
 
 #include <rtthread.h>
-#define DBG_TAG "demoEthnet"
+#define DBG_TAG "demoEth"
 #include <usrPublic.h>
 #include <stdlib.h>
 #include <bsp/includes/taskNet.h>
@@ -123,7 +123,7 @@ void eth_set(int argc, char *argv[])
         }
         else if (!strcmp(argv[1], "port")) {
             port = atoi(argv[2]);
-            if ((!port) || (UDP_ENSURE_LOCAL_PORT_RANGE(port))) {
+            if ((port) && (UDP_ENSURE_LOCAL_PORT_RANGE(port))) {
                 cfg.localPort = port;
                 rtn = 1;
             }

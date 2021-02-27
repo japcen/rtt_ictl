@@ -15,172 +15,223 @@ extern "C"
 }
 #include <bsp/includes/bspDIO.h>
 
-// do
-void CCtrlGpioDo::init(rt_uint16_t* pinlst, rt_uint8_t* pInilst, rt_uint8_t num)
+// DO
+/* 初始化Do序列
+ * *pPinList 引脚队列    *pIniList 初始值队列,RT_NULL时为默认拉高
+ * num DO数量
+ */
+void CCtrlGpioDO::init(rt_uint16_t* pPinList, rt_uint8_t* pIniList, rt_uint8_t num)
 {
-    if (RT_NULL != lstPin) {
-        maxNum = 0;
-        DO_SET = 0;
-        rt_free(lstPin);
+    if (pPinList != RT_NULL) return;
+    if (RT_NULL != m_pPins) {
+        m_num = 0;
+        m_doSet = 0;
+        rt_free(m_pPins);
     }
 
-    lstPin = (rt_uint16_t*)rt_malloc(sizeof(rt_uint16_t)*num);
-    if (pinlst != RT_NULL) {
-        maxNum = num;
+    m_pPins = (rt_uint16_t*)rt_malloc(sizeof(rt_uint16_t)*num);
+    if (RT_NULL != m_pPins) {
+        m_num = num;
         for (rt_uint8_t i = 0; i<num; i++) {
-            lstPin[i] = pinlst[i];
-            ////DO_SET |= 1<<i;
-            ////immSetDO(i, PIN_HIGH);
-            // CMEDIT 在board.c中初始化
-            rt_pin_mode(pinlst[i], PIN_MODE_OUTPUT);
-            if (RT_NULL != pInilst) { // 按初始值启动
-                immSetDO(i, pInilst[i]);
+            m_pPins[i] = pPinList[i];
+            rt_pin_mode(pPinList[i], PIN_MODE_OUTPUT);
+            if (RT_NULL != pIniList) { // 按初始值启动
+                setRtDO(i, pIniList[i]);
             }
             else { // 未设初始值时默认拉高
-                immSetDO(i, PIN_HIGH);
+                setRtDO(i, PIN_HIGH);
             }
         }
     }
 }
-
-void CCtrlGpioDo::setDO(rt_uint8_t idx, rt_uint8_t state)
+/* 设置DO引脚状态(缓存)
+ * idx 引脚序号[0~max] 0xFF:该序列所有DO
+ * state 引脚状态 e.g PIN_LOW/PIN_HIGH
+ * .describe DO状态不会立即生效,调用outputDO才实际输出
+ */
+void CCtrlGpioDO::setDO(rt_uint8_t idx, rt_uint8_t state)
 {
     if (0xFF == idx) {
         if (PIN_LOW == state) {
-            DO_SET = 0;
+            m_doSet = 0;
         }
         else {
-            DO_SET = 0xFFFF;
+            m_doSet = 0xFFFF;
         }
     }
     else {
-        if (PIN_LOW == state) {
-            DO_SET &= ~(1<<idx);
-        }
-        else {
-            DO_SET |= (1<<idx);
+        if (idx < m_num) {
+            if (PIN_LOW == state) {
+                m_doSet &= ~(1<<idx);
+            }
+            else {
+                m_doSet |= (1<<idx);
+            }
         }
     }
 }
-void CCtrlGpioDo::immSetDO(rt_uint8_t idx, rt_uint8_t state)
+/* 设置DO引脚状态(实时)
+ * idx 引脚序号[0~max]
+ * state 引脚状态 e.g PIN_LOW/PIN_HIGH
+ * .describe DO状态立即生效
+ */
+void CCtrlGpioDO::setRtDO(rt_uint8_t idx, rt_uint8_t state)
 {
-    if (idx >= maxNum) return;
+    if (idx >= m_num) return;
 
     if (PIN_LOW == state) {
-        DO_SET &= ~(1<<idx);
-        rt_pin_write(lstPin[idx], PIN_LOW);
+        m_doSet &= ~(1<<idx);
+        rt_pin_write(m_pPins[idx], PIN_LOW);
     }
     else {
-        DO_SET |= (1<<idx);
-        rt_pin_write(lstPin[idx], PIN_HIGH);
+        m_doSet |= (1<<idx);
+        rt_pin_write(m_pPins[idx], PIN_HIGH);
     }
 }
-void CCtrlGpioDo::toggleDO(rt_uint8_t idx)
+/* DO翻转(实时)
+ * idx 引脚序号[0~max]
+ */
+void CCtrlGpioDO::toggleDO(rt_uint8_t idx)
 {
-    if (idx >= maxNum) return;
+    if (idx >= m_num) return;
 
-    if (PIN_HIGH == rt_pin_read(lstPin[idx])) {
-        DO_SET &= ~(1<<idx);
-        rt_pin_write(lstPin[idx], PIN_LOW);
+    if (PIN_HIGH == rt_pin_read(m_pPins[idx])) {
+        m_doSet &= ~(1<<idx);
+        rt_pin_write(m_pPins[idx], PIN_LOW);
     }
     else {
-        DO_SET |= (1<<idx);
-        rt_pin_write(lstPin[idx], PIN_HIGH);
+        m_doSet |= (1<<idx);
+        rt_pin_write(m_pPins[idx], PIN_HIGH);
     }
 }
-rt_uint8_t CCtrlGpioDo::getDO(rt_uint8_t idx)
+/* 获取DO状态(缓存)
+ * idx 引脚序号[0~max]
+ * return DO命令状态
+ */
+rt_uint8_t CCtrlGpioDO::getDO(rt_uint8_t idx)
 {
-    if (DO_SET & (1<<idx)) {
+    if (m_doSet & (1<<idx)) {
         return PIN_HIGH;
     }
     else {
         return PIN_LOW;
     }
 }
-rt_uint8_t CCtrlGpioDo::getimmDO(rt_uint8_t idx)
+/* 获取DO实际状态(实时)
+ * idx 引脚序号[0~max]
+ * return DO实际状态
+ */
+rt_uint8_t CCtrlGpioDO::getRtDO(rt_uint8_t idx)
 {
-    return rt_pin_read(lstPin[idx]);
+    return rt_pin_read(m_pPins[idx]);
 }
-rt_uint16_t CCtrlGpioDo::showDO(void)
+/* 获取DO系列全部引脚状态(缓存)
+ * return
+ */
+rt_uint16_t CCtrlGpioDO::showDO(void)
 {
-    return DO_SET;
+    return m_doSet;
 }
-void CCtrlGpioDo::outputDO(rt_uint8_t idx)
+/* 输出DO状态
+ * idx 引脚序号[0~max] 0xFF:该序列所有DO
+ * .discribe 使DO缓存命令生效 DO动作
+ */
+void CCtrlGpioDO::outputDO(rt_uint8_t idx)
 {
     rt_uint8_t i = idx;
     rt_uint8_t num = idx + 1;
     if (0xFF == idx) {
         i = 0;
-        num = maxNum;
+        num = m_num;
     }
 
-    if (num > maxNum) {
+    if (num > m_num) {
         return;
     }
 
     for (; i<num; i++) {
-        rt_pin_write(lstPin[i], getDO(i));
+        rt_pin_write(m_pPins[i], getDO(i));
     }
 }
 
 // di
-void CCtrlGpioDi::init(rt_uint16_t* pinlst, rt_uint8_t num)
+/* 初始化Do序列
+ * *pPinList 引脚队列    num DO数量
+ */
+void CCtrlGpioDI::init(rt_uint16_t* pinlst, rt_uint8_t num)
 {
-    if (RT_NULL != lstPin) {
-        maxNum = 0;
-        DI_DAT = 0;
-        rt_free(lstPin);
+    if (RT_NULL != m_pPins) {
+        m_num = 0;
+        m_diDat = 0;
+        rt_free(m_pPins);
     }
 
-    lstPin = (rt_uint16_t*)rt_malloc(sizeof(rt_uint16_t)*num);
-    if (lstPin != RT_NULL)
+    m_pPins = (rt_uint16_t*)rt_malloc(sizeof(rt_uint16_t)*num);
+    if (m_pPins != RT_NULL)
     {
-        for (rt_uint8_t i; i<num; i++)
+        m_num = num;
+        for (rt_uint8_t i=0; i<num; i++)
         {
-            lstPin[i] = pinlst[i];
-            rt_pin_mode(lstPin[i], PIN_MODE_INPUT);
+            m_pPins[i] = pinlst[i];
+            rt_pin_mode(m_pPins[i], PIN_MODE_INPUT);
         }
-        maxNum = num;
+        updataDI();
     }
 }
-
-void CCtrlGpioDi::setDI(rt_uint8_t idx, rt_uint8_t state)
+/* 设置DI数据状态
+ * idx 引脚序号[0~max] 0xFF:该序列所有DO
+ * state 引脚状态 e.g PIN_LOW/PIN_HIGH
+ */
+void CCtrlGpioDI::setDI(rt_uint8_t idx, rt_uint8_t state)
 {
     if (0xFF == idx) {
         if (PIN_LOW == state) {
-            DI_DAT = 0;
+            m_diDat = 0;
         }
         else {
-            DI_DAT = 0xFF;
+            m_diDat = 0xFF;
         }
     }
     else {
         if (PIN_LOW == state) {
-            DI_DAT &= ~(1<<idx);
+            m_diDat &= ~(1<<idx);
         }
         else {
-            DI_DAT |= (1<<idx);
+            m_diDat |= (1<<idx);
         }
     }
 }
-rt_uint8_t CCtrlGpioDi::getDI(rt_uint8_t idx)
+/* 获取DI实际状态
+ * idx 引脚序号[0~max]
+ * return DI实际状态
+ */
+rt_uint8_t CCtrlGpioDI::getRtDI(rt_uint8_t idx)
 {
-    if (DI_DAT & (1<<idx)) {
+    if (idx >= m_num) return PIN_LOW;
+
+    setDI(idx, rt_pin_read(m_pPins[idx]));
+    if (m_diDat & (1<<idx)) {
         return PIN_HIGH;
     }
     else {
         return PIN_LOW;
     }
 }
-rt_uint8_t CCtrlGpioDi::showDI(void)
+/* 获取DI系列全部引脚实际状态
+ * return
+ */
+rt_uint8_t CCtrlGpioDI::showDI(void)
 {
-    return DI_DAT;
+    updataDI();
+    return m_diDat;
 }
-
-void CCtrlGpioDi::updataDI(void)
+/* 更新DI引脚状态
+ * return
+ */
+void CCtrlGpioDI::updataDI(void)
 {
-    for (rt_uint8_t i=0; i<maxNum; i++) {
-        setDI(i, rt_pin_read(lstPin[i]));
+    for (rt_uint8_t i=0; i<m_num; i++) {
+        setDI(i, rt_pin_read(m_pPins[i]));
     }
 }
 

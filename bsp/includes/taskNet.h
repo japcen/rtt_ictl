@@ -75,7 +75,6 @@ void rt_tcpclient_close(rt_tcpclient_t *thiz);
 rt_int32_t rt_tcpclient_attach_rx_cb(rt_tcpclient_t *thiz, rx_cb_t cb);
 rt_int32_t rt_tcpclient_send(rt_tcpclient_t *thiz, const void *buff, rt_size_t len);
 
-//rt_uint16_t getLocalPort(void);
 rt_err_t setCurNetCfg(struct netdev *pDev);
 rt_err_t setNetCfg(rt_netparam *netCfg);
 rt_err_t setDefNetCfg(void);

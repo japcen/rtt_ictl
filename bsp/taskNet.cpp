@@ -746,14 +746,6 @@ rt_err_t setCurNetCfg(struct netdev *pDev)
     return RT_EOK;
 }
 
-#if 0
-// 获取本地端口号
-rt_uint16_t getLocalPort(void)
-{
-    return g_paramNet.localPort;
-}
-#endif
-
 rt_err_t setNetCfg(rt_netparam *netCfg)
 {
     rt_netparam bakCfg;

@@ -11,6 +11,7 @@
 #include <board.h>
 #include<rtthread.h>
 #include<rtdevice.h>
+#include <bsp/includes/bspEncoder.h>
 
 #ifdef BSP_USING_TIM
 #include "drv_config.h"
@@ -465,6 +466,18 @@ void TIM1_BRK_TIM15_IRQHandler(void)
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
+#ifdef BSP_USING_TIM1
+    if (htim->Instance == TIM1)
+    {
+        rt_device_hwtimer_isr(&stm32_hwtimer_obj[TIM1_INDEX].time_device);
+        if (htim->Instance->CR1 & 0x0010){ // 向下溢出
+            g_ctrlEnc[1].circle--;
+        }
+        else {
+            g_ctrlEnc[1].circle++;
+        }
+    }
+#endif
 #ifdef BSP_USING_TIM2
     if (htim->Instance == TIM2)
     {
@@ -481,6 +494,12 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     if (htim->Instance == TIM4)
     {
         rt_device_hwtimer_isr(&stm32_hwtimer_obj[TIM4_INDEX].time_device);
+        if (htim->Instance->CR1 & 0x0010){ // 向下溢出
+            g_ctrlEnc[0].circle--;
+        }
+        else {
+            g_ctrlEnc[0].circle++;
+        }
     }
 #endif
 #ifdef BSP_USING_TIM5

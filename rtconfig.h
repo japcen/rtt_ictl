@@ -111,6 +111,7 @@
 #define RT_SFUD_USING_SFDP
 #define RT_SFUD_USING_FLASH_INFO_TABLE
 #define RT_SFUD_SPI_MAX_HZ 50000000
+#define RT_USING_PULSE_ENCODER
 
 /* Using USB */
 
@@ -184,7 +185,6 @@
 #define LWIP_SO_SNDTIMEO 1
 #define LWIP_SO_RCVBUF 1
 #define LWIP_NETIF_LOOPBACK 0
-#define RT_LWIP_USING_HW_CHECKSUM
 #define RT_LWIP_USING_PING
 /* end of light weight TCP/IP stack */
 
